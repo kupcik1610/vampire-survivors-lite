@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mini Survivors — STARTER</title>
+<style>
+  body {
+    margin: 0;
+    background: #14141f;
+    color: #eee;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  h1 { margin: 10px; font-size: 18px; color: #9af; }
+  canvas { background: #1e1e2e; border: 2px solid #444; }
+  p { color: #888; margin: 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Mini Survivors</h1>
+  <canvas id="game" width="700" height="500"></canvas>
+  <p>Right now this is just a blue dot. Follow the stages to build the game.</p>
+
+<script>
+// =============================================================================
+//  MINI SURVIVORS — STARTER (JavaScript)
+//  You start with ONE blue dot (Stage 1 is done). Build the rest top to bottom.
+//  Curriculum-JavaScript.pdf gives you the exact code for each Stage.
+//
+//  HOW TO FILL IN:
+//   • Each "// >>> Stage N" is where that stage's new code goes.
+//   • The TWO functions at the BOTTOM — draw() and loop() — grow as you go.
+//     Most stages you just UNCOMMENT one line in them (look for "// Stage N").
+//   • That bottom area is the ONLY place you scroll back to. Everything else
+//     is written once, top to bottom.
+//
+//  STAGE MAP — what each stage adds:
+//   Stage 2  keyboard + movePlayer()                 (+ uncomment 1 line in loop)
+//   Stage 3  enemies/frame + spawnEnemy()            (+ uncomment in draw & loop)
+//   Stage 4  distance() + moveEnemies()              (+ uncomment 1 line in loop)
+//   Stage 5  bullets + autoShoot() + fireRate↑Stage1 (+ uncomment in draw & loop)
+//   Stage 6  score/gameOver + moveBullets()          (+ uncomment 1 line in loop)
+//   Stage 7  clock + HUD + game-over screen + restart (+ wrap the loop)
+// =============================================================================
+
+
+// ===== Stage 1 — SETUP (done for you) =====
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const W = canvas.width;   // 700
+const H = canvas.height;  // 500
+
+
+// ===== Stage 1 — the player (done for you) =====
+let player = { x: W / 2, y: H / 2, size: 12, speed: 3 };
+// >>> Stage 5: add  fireRate: 30  inside the player (so it can shoot on a timer)
+
+
+// ===== Stage 1 — circle helper (done for you) =====
+function circle(x, y, size, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+
+// ===== Stage 2 — keyboard input + movePlayer() =====
+// >>> Stage 2: remember which keys are held (a `keys` object + keydown/keyup),
+//     then write movePlayer() to change player.x/.y and clamp to the screen.
+
+
+// ===== Stage 3 — enemies list + frame, and spawnEnemy() =====
+// >>> Stage 3:  let enemies = [];   let frame = 0;
+//     then write spawnEnemy() to push an enemy at a random edge now and then.
+
+
+// ===== Stage 4 — distance() + moveEnemies() =====
+// >>> Stage 4: write distance(ax, ay, bx, by), then moveEnemies() to step each
+//     enemy toward the player.
+
+
+// ===== Stage 5 — bullets list + autoShoot() =====
+// >>> Stage 5:  let bullets = [];   then write autoShoot() to fire at the
+//     nearest enemy every player.fireRate frames.
+//     (Also do the "Stage 5" note up in the Stage 1 player block.)
+
+
+// ===== Stage 6 — score + gameOver, and moveBullets() =====
+// >>> Stage 6:  let score = 0;   let gameOver = false;
+//     write moveBullets() (move, drop off-screen ones, kill enemies on hit),
+//     and add the "game over on touch" line inside moveEnemies() above.
+
+
+// ===== Stage 7 — clock + restart =====
+// >>> Stage 7: add the survival clock (startTime + seconds), a resetGame()
+//     function, and a keydown listener so pressing R restarts after you die.
+
+
+// ===== DRAW — uncomment one line per stage =====
+function draw() {
+  ctx.clearRect(0, 0, W, H);                                   // wipe the screen
+
+  // for (let e of enemies) circle(e.x, e.y, e.size, "#e55");  // Stage 3: enemies
+  // for (let b of bullets) circle(b.x, b.y, b.size, "#ff5");  // Stage 5: bullets
+  circle(player.x, player.y, player.size, "#5af");             // Stage 1: player
+  // Stage 7: draw the HUD here (ctx.fillText for "Time" and "Score")
+}
+
+
+// ===== THE GAME LOOP — uncomment one line per stage =====
+function loop() {
+  // --- update the world (uncomment one line per stage) ---
+  // movePlayer();    // Stage 2
+  // frame++;         // Stage 3
+  // spawnEnemy();    // Stage 3
+  // moveEnemies();   // Stage 4
+  // autoShoot();     // Stage 5
+  // moveBullets();   // Stage 6
+
+  draw();
+  requestAnimationFrame(loop);   // run again next frame
+
+  // >>> Stage 7: wrap the update lines above in
+  //       if (gameOver) { drawGameOver(); } else { ...updates...; draw(); }
+  //     and add the `seconds = ...` clock line. (The PDF shows the final shape.)
+}
+loop();
+</script>
+</body>
+</html>

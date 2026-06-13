@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mini Survivors</title>
+<style>
+  /* ---- Just some page styling so it looks nice. Not the important part. ---- */
+  body {
+    margin: 0;
+    background: #14141f;
+    color: #eee;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  h1 { margin: 10px; font-size: 18px; color: #9af; }
+  canvas { background: #1e1e2e; border: 2px solid #444; }
+  p { color: #888; margin: 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Mini Survivors</h1>
+  <canvas id="game" width="700" height="500"></canvas>
+  <p>Move with WASD or arrow keys. You shoot automatically. Survive!</p>
+
+<script>
+// =============================================================================
+//  MINI SURVIVORS  —  a tiny Vampire Survivors clone (JavaScript)
+//
+//  The code is laid out in the SAME order you build it: Stage 1 at the top,
+//  Stage 7 at the bottom. The two functions that grow as you go — draw() and
+//  loop() — live at the very bottom, and you add one line to each per stage.
+//
+//  How a game works in one sentence: ~60 times a second we (1) update the
+//  world, then (2) draw it. That repeating cycle is the "loop" at the bottom.
+// =============================================================================
+
+
+// ===== Stage 1 — SETUP =====
+// "canvas" is the rectangle we draw into. "ctx" is the pen we draw with.
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const W = canvas.width;   // 700
+const H = canvas.height;  // 500
+
+
+// ===== Stage 1 — the player =====
+// An object is just a bag of related values. This bag describes our hero.
+let player = {
+  x: W / 2,      // position, starts in the middle
+  y: H / 2,
+  size: 12,      // radius of the circle
+  speed: 3,      // how many pixels it moves per frame
+  fireRate: 30,  // (added in Stage 5) shoot every 30 frames. Lower = faster.
+};
+
+
+// ===== Stage 1 — a helper that draws one filled circle =====
+function circle(x, y, size, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+
+// ===== Stage 2 — keyboard input (remember which keys are held down) =====
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup",   e => keys[e.key.toLowerCase()] = false);
+
+
+// ===== Stage 2 — move the player =====
+function movePlayer() {
+  if (keys["w"] || keys["arrowup"])    player.y -= player.speed;
+  if (keys["s"] || keys["arrowdown"])  player.y += player.speed;
+  if (keys["a"] || keys["arrowleft"])  player.x -= player.speed;
+  if (keys["d"] || keys["arrowright"]) player.x += player.speed;
+
+  // Keep the player inside the screen.
+  player.x = Math.max(player.size, Math.min(W - player.size, player.x));
+  player.y = Math.max(player.size, Math.min(H - player.size, player.y));
+}
+
+
+// ===== Stage 3 — enemies (a list) and a frame counter =====
+let enemies = [];
+let frame = 0;        // counts how many frames have passed (our clock)
+
+// ===== Stage 3 — spawn an enemy at a random edge, every so often =====
+function spawnEnemy() {
+  // The longer you survive, the more often enemies appear.
+  const spawnEvery = Math.max(6, 45 - frame / 120);
+  if (frame % Math.floor(spawnEvery) !== 0) return;
+
+  // Pick a random spot somewhere on the border.
+  let x, y;
+  if (Math.random() < 0.5) {           // left or right edge
+    x = Math.random() < 0.5 ? 0 : W;
+    y = Math.random() * H;
+  } else {                             // top or bottom edge
+    x = Math.random() * W;
+    y = Math.random() < 0.5 ? 0 : H;
+  }
+  enemies.push({ x: x, y: y, size: 10, speed: 1.6 });
+}
+
+
+// ===== Stage 4 — distance between two points (a helper) =====
+function distance(ax, ay, bx, by) {
+  const dx = ax - bx;
+  const dy = ay - by;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// ===== Stage 4 — move every enemy toward the player =====
+function moveEnemies() {
+  for (let e of enemies) {
+    const d = distance(e.x, e.y, player.x, player.y);
+    if (d === 0) continue;                       // never divide by zero
+    e.x += ((player.x - e.x) / d) * e.speed;
+    e.y += ((player.y - e.y) / d) * e.speed;
+
+    // (Stage 6) Touching the player = instant death.
+    if (d < e.size + player.size) gameOver = true;
+  }
+}
+
+
+// ===== Stage 5 — bullets (a list) =====
+let bullets = [];
+
+// ===== Stage 5 — fire a bullet at the nearest enemy, on a timer =====
+function autoShoot() {
+  if (frame % player.fireRate !== 0) return;  // not time to shoot yet
+  if (enemies.length === 0) return;           // nothing to shoot at
+
+  // Find the nearest enemy.
+  let target = enemies[0];
+  let best = Infinity;
+  for (let e of enemies) {
+    const d = distance(player.x, player.y, e.x, e.y);
+    if (d < best) { best = d; target = e; }
+  }
+
+  // Aim a bullet from the player toward that enemy.
+  const d = distance(player.x, player.y, target.x, target.y);
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    dx: ((target.x - player.x) / d) * 6,   // 6 = bullet speed
+    dy: ((target.y - player.y) / d) * 6,
+    size: 4,
+  });
+}
+
+
+// ===== Stage 6 — score and the game-over flag =====
+let score = 0;
+let gameOver = false;
+
+// ===== Stage 6 — move bullets; remove off-screen ones; kill enemies on hit ===
+function moveBullets() {
+  // Loop backwards so removing items doesn't mess up the list.
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.dx;
+    b.y += b.dy;
+
+    // Off the screen? Remove it.
+    if (b.x < 0 || b.x > W || b.y < 0 || b.y > H) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    // Did this bullet hit any enemy?
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      if (distance(b.x, b.y, e.x, e.y) < b.size + e.size) {
+        score += 10;                     // you get points for the kill
+        bullets.splice(i, 1);            // bullet is used up
+        enemies.splice(j, 1);            // enemy dies
+        break;
+      }
+    }
+  }
+}
+
+
+// ===== Stage 7 — a survival clock, and restarting after you die =====
+let startTime = performance.now();   // when this run began (real time, in ms)
+let seconds = 0;                     // seconds survived (freezes when you die)
+
+function resetGame() {
+  enemies = [];
+  bullets = [];
+  frame = 0;
+  score = 0;
+  gameOver = false;
+  player.x = W / 2;
+  player.y = H / 2;
+  startTime = performance.now();
+  seconds = 0;
+}
+
+// Press R to play again, once you're dead.
+document.addEventListener("keydown", e => {
+  if (e.key.toLowerCase() === "r" && gameOver) resetGame();
+});
+
+
+// ===== DRAW — runs every frame. One line was added here per stage. =====
+function draw() {
+  ctx.clearRect(0, 0, W, H);                                 // wipe the screen
+
+  for (let e of enemies) circle(e.x, e.y, e.size, "#e55");   // Stage 3: enemies
+  for (let b of bullets) circle(b.x, b.y, b.size, "#ff5");   // Stage 5: bullets
+  circle(player.x, player.y, player.size, "#5af");           // Stage 1: player
+
+  // Stage 7: the HUD (text in the corner)
+  ctx.fillStyle = "#fff";
+  ctx.font = "14px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("Time: " + seconds + "s", 10, 20);
+  ctx.fillText("Score: " + score, 10, 40);
+}
+
+// ===== DRAW — the game-over screen (Stage 7) =====
+function drawGameOver() {
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "30px monospace";
+  ctx.fillText("GAME OVER", W / 2, H / 2 - 10);
+  ctx.font = "16px monospace";
+  ctx.fillText("You survived " + seconds + " seconds", W / 2, H / 2 + 20);
+  ctx.fillText("Final score: " + score, W / 2, H / 2 + 45);
+  ctx.fillText("Press R to play again", W / 2, H / 2 + 75);
+}
+
+
+// ===== THE GAME LOOP — runs ~60–120×/second (your screen's refresh rate) =====
+function loop() {
+  if (gameOver) {
+    drawGameOver();
+  } else {
+    movePlayer();    // Stage 2
+    frame++;         // Stage 3
+    spawnEnemy();    // Stage 3
+    moveEnemies();   // Stage 4
+    autoShoot();     // Stage 5
+    moveBullets();   // Stage 6
+    seconds = Math.floor((performance.now() - startTime) / 1000);   // Stage 7
+    draw();
+  }
+  requestAnimationFrame(loop);   // run again next frame
+}
+loop();
+</script>
+</body>
+</html>

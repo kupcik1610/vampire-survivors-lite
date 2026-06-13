@@ -1,0 +1,14 @@
+# Python virtual environment — not committed. Recreate it with:
+#   python3 -m venv venv
+#   ./venv/bin/pip install -r requirements.txt
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# macOS clutter
+.DS_Store
+
+# Editor / tooling output
+.VSCodeCounter/

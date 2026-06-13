@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>JavaScript Primer — Mini Survivors</title>
+<style>
+  body {
+    margin: 0; padding: 20px;
+    background: #14141f; color: #eee;
+    font-family: monospace; font-size: 14px; line-height: 1.5;
+  }
+  h1 { color: #9af; font-size: 18px; }
+  p  { color: #888; }
+  /* All the primer's output gets written into this box. */
+  #out {
+    background: #1e1e2e; border: 2px solid #444; border-radius: 6px;
+    padding: 14px; white-space: pre-wrap;
+    max-width: 760px;
+  }
+  .h { color: #9af; }     /* section headers */
+</style>
+</head>
+<body>
+  <h1>JavaScript Primer</h1>
+  <p>Open this file in a browser. Everything below was printed by the code in it.
+     Try editing a number in the &lt;script&gt;, save, and refresh to see it change.</p>
+  <div id="out"></div>
+
+<script>
+// =============================================================================
+//  JAVASCRIPT PRIMER — the building blocks, before we build the game
+//
+//  This is a WARM-UP. It shows the handful of JavaScript ideas the game uses,
+//  each in its tiniest form. You don't need to memorise anything — just open
+//  this file and read along, top to bottom.
+//
+//  "log(...)" below just writes a line into the box on the page (like Python's
+//  print). The "edit → save → refresh → look" loop is the whole job.
+// =============================================================================
+
+// A tiny helper so we can "print" onto the page. (You can ignore how it works.)
+const box = document.getElementById("out");
+function log(...things) { box.textContent += things.join(" ") + "\n"; }
+function header(t)      { box.textContent += "\n=== " + t + " ===\n"; }
+
+
+header("1. VARIABLES & DATA TYPES");
+
+// A variable is just a NAME that holds a VALUE.  let name = value
+let score = 0;          // a number (in JS, whole numbers and decimals are both "number")
+let speed = 1.6;        // also a number
+let name = "Mira";      // text, in quotes (a "string")
+let alive = true;       // a yes/no value (a "boolean": true or false)
+
+log("score is", score);
+log("speed is", speed);
+log("name is", name);
+log("alive is", alive);
+
+// You can change a variable later. "+=" means "add to what's already there".
+score = score + 10;     // the long way
+score += 10;            // the short way — same thing
+log("score is now", score);             // 20
+
+// Sticking text together for a message (the game does this for its score display):
+log("Score: " + score);                 // a number glued onto text becomes text
+
+
+header("2. OBJECTS — a 'bag of values'");
+
+// An object groups related values under one name, each with a label (a "key").
+// In the game, the player is exactly this:
+let player = { x: 350, y: 250, size: 12, speed: 3 };
+
+log("player x:", player.x);             // read one value with .key
+player.x = 400;                         // change one value
+log("player x after moving:", player.x);
+
+
+header("3. ARRAYS — many things in one place");
+
+// An array holds a bunch of items in order. In the game, all enemies live here.
+let enemies = [];                       // start empty
+enemies.push("goblin");                 // add to the end
+enemies.push("bat");
+enemies.push("slime");
+
+log("enemies:", enemies.join(", "));
+log("how many:", enemies.length);       // .length = how many items
+log("the first one:", enemies[0]);      // counting starts at 0!
+
+
+header("4. IF / ELSE IF / ELSE — making decisions");
+
+// The game constantly asks yes/no questions, like "did a bullet hit an enemy?"
+let health = 30;
+
+if (health <= 0) {
+  log("You died.");
+} else if (health < 50) {               // "else if" = checked next
+  log("Careful — low health!");
+} else {
+  log("You're fine.");
+}
+
+// Comparisons give true/false:  <  >  <=  >=  ===(equal)  !==(not equal)
+log("is health below 50?", health < 50);
+
+
+header("5. FOR LOOPS — do something to every item");
+
+// "for each enemy in the list, do this." The game uses this to move every enemy.
+for (let enemy of enemies) {
+  log("an enemy:", enemy);
+}
+
+// A counting loop: start at 0, keep going while i < 3, add 1 each time.
+for (let i = 0; i < 3; i++) {
+  log("shot number", i);
+}
+
+
+header("6. WHILE LOOPS — keep going until...");
+
+// A "while" loop repeats as long as something stays true.
+// The game's main loop is basically: while the window is open, keep playing.
+let countdown = 3;
+while (countdown > 0) {
+  log("starting in", countdown);
+  countdown -= 1;                       // subtract 1 each time, or it never ends!
+}
+log("GO!");
+
+
+header("7. FUNCTIONS — name a chunk of work, reuse it");
+
+// A function is a named set of steps. You "call" it to run those steps.
+// It can take inputs (in the brackets) and give back a result with "return".
+function add(a, b) {
+  return a + b;
+}
+
+log("add(2, 3) =", add(2, 3));          // call it with different inputs
+log("add(10, 5) =", add(10, 5));
+
+// A real one from the game: how far apart are two points?
+function distance(ax, ay, bx, by) {
+  const dx = ax - bx;
+  const dy = ay - by;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+log("distance from (0,0) to (3,4) =", distance(0, 0, 3, 4));   // 5
+
+
+header("THAT'S EVERYTHING");
+log("Variables, objects, arrays, if/else, for, while, functions.");
+log("The whole game is just these pieces, combined. You're ready for Stage 1.");
+</script>
+</body>
+</html>
